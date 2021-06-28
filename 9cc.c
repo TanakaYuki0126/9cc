@@ -21,10 +21,24 @@ struct Token {
 };
 
 Token *token;
+char *user_input;
 
 void error(char *fmt, ...){
     va_list ap;
     va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+    exit(1);
+}
+
+void error_at(char *loc, char *fmt, ...){
+    va_list ap;
+    va_start(ap, fmt);
+    
+    int pos = loc - user_input;
+    fprintf(stderr, "%s\n", user_input);
+    fprintf(stderr, "%*s", pos, " ");
+    fprintf(stderr, "^ ");
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
     exit(1);
@@ -42,7 +56,7 @@ bool consume(char op){
 //if next token is op, put token forward.
 void expect(char op){
     if(token->kind != TK_RESERVED || token->str[0] != op)
-      error("[function expect error]not '%c'", op);
+      error("not '%c'", op);
       
     token = token->next;
 }
@@ -50,7 +64,7 @@ void expect(char op){
 
 //return the value if the token is number. and move the token forward.
 int expect_number(){
-    if(token->kind != TK_NUM) error("not a number");
+    if(token->kind != TK_NUM) error_at(token->str, "not a number");
     int val = token->val;
     token = token->next;
     return val;
@@ -94,7 +108,8 @@ Token *tokenize(char *p){
             cur->val = strtol(p, &p, 10);
             continue;
         }
-        error("couldnt talknize");
+        //error("couldnt talknize");
+        error_at(token->str, "couldnt talknize");
     }
     new_token(TK_EOF, cur, p);
     //head is empty token. so
@@ -108,6 +123,7 @@ int main(int argc, char **argv){
         fprintf(stderr, "input 2 argument");
         return 1;
     }
+    user_input = argv[1];
     //token: result of tokenized argv[1]
     token = tokenize(argv[1]);
    
