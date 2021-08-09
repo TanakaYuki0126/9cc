@@ -148,6 +148,10 @@ struct Node{
     int val;//use if "kind" = ND_NUM
 };
 
+//Nodeとは、(左辺) (演算子) (右辺)のペアのこと。
+//NodeKindは、演算子の種類。
+//単なる数値の時は、kindはND_NUMとし、Node->valにその値を代入。
+
 Node *primary();
 Node *mul();
 Node *expr();
@@ -177,7 +181,14 @@ Node *new_node_num(int val){
 }
 
 
-
+//順番としては
+//primaryの中身(exprに再帰)のノード: ()
+//unaryのノード: 単項演算子(+, -)
+//mulのノード: *, /
+//addのノード: +, -
+//relationalのノード: <, >, <=. >=
+//equalityのノード: ==, !=
+//というふうにアセンブリコード化していく。
 
 
 Node *expr(){
@@ -261,11 +272,14 @@ void gen(Node *node){
         printf("    push %d\n", node->val);
         return;
     }
+    //左辺、右辺を両方アセンブリ化。
     gen(node->lhs);
     gen(node->rhs);
+    //ここまできたら、左辺、右辺の数値はスタックの上2つになっているので、
     printf("    pop rdi\n");
     printf("    pop rax\n");
 
+    //演算子の種類によって場合分け。
     switch(node->kind){
         case ND_ADD:
             printf("    add rax, rdi\n");
@@ -322,7 +336,6 @@ int main(int argc, char **argv){
     gen(node);
 
     printf("    pop rax\n");
-
     printf("    ret\n");
     return 0;
 }
