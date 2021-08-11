@@ -8,6 +8,7 @@
 typedef enum{
     TK_RESERVED,
     TK_NUM,
+    TK_IDENT,
     TK_EOF,
 } TokenKind;
 
@@ -34,6 +35,9 @@ typedef enum{
     ND_LT, // larger than
     ND_LE, // larger or equal
     ND_NUM,
+    ND_ASSIGN,
+    ND_LVAR,
+    ND_NUM,
 } NodeKind;
 
 typedef struct Node Node;
@@ -43,6 +47,7 @@ struct Node{
     Node *lhs;//ledt handed side
     Node *rhs;//right handed side
     int val;//use if "kind" = ND_NUM
+    int offset;// user if kind= ND_LVAR
 };
 
 
@@ -56,6 +61,7 @@ void gen(Node *node);
 
 
 //parse.c
+Node *code[100];
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
@@ -83,3 +89,6 @@ Node *relational();
 Node *mul();
 Node *unary();
 Node *primary();
+Node *assign();
+Node *stmt();
+void program();
